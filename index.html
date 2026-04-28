@@ -490,6 +490,15 @@
       filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.26));
     }
 
+    .carrier-ring {
+      fill: none;
+      stroke: #fffaf0;
+      stroke-width: 4;
+      stroke-dasharray: 8 7;
+      opacity: 0.9;
+      filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.22));
+    }
+
     @media (max-width: 1080px) {
       header,
       .workspace {
@@ -692,6 +701,8 @@
         do: "Curve the first step only if pressure is needed. Keep the middle closed.",
         dont: "Do not let both #6 and #8 jump. That opens the pass into red #9.",
         ball: { x: 500, y: 205 },
+        ballAt: { x: 500, y: 240 },
+        carrier: "7",
         blues: {
           "1": { x: 500, y: 610 },
           "3": { x: 380, y: 492 },
@@ -700,6 +711,7 @@
           "8": { x: 552, y: 365 }
         },
         reds: {
+          "7": { x: 500, y: 205 },
           "9": { x: 500, y: 300 },
           "10": { x: 760, y: 250 },
           "11": { x: 240, y: 250 }
@@ -731,6 +743,8 @@
         do: "Arrive on an angle that blocks the inside pass and makes the sideline the defender.",
         dont: "Do not leave the far-side defender wide. The central lane is more dangerous.",
         ball: { x: 170, y: 255 },
+        ballAt: { x: 192, y: 278 },
+        carrier: "7",
         blues: {
           "1": { x: 440, y: 610 },
           "3": { x: 335, y: 485 },
@@ -739,6 +753,7 @@
           "8": { x: 410, y: 358 }
         },
         reds: {
+          "7": { x: 170, y: 255 },
           "9": { x: 455, y: 308 },
           "10": { x: 800, y: 266 },
           "11": { x: 162, y: 205 }
@@ -773,6 +788,8 @@
         do: "Move as one connected block. Keep short distances between defense and midfield.",
         dont: "Do not let the presser run straight and get beaten inside.",
         ball: { x: 830, y: 255 },
+        ballAt: { x: 808, y: 278 },
+        carrier: "7",
         blues: {
           "1": { x: 560, y: 610 },
           "3": { x: 465, y: 498 },
@@ -781,6 +798,7 @@
           "8": { x: 740, y: 330 }
         },
         reds: {
+          "7": { x: 830, y: 255 },
           "9": { x: 545, y: 308 },
           "10": { x: 200, y: 266 },
           "11": { x: 838, y: 205 }
@@ -815,6 +833,8 @@
         do: "Pressure the ball strongly enough that the switch is slow or inaccurate.",
         dont: "Do not stay collapsed after the switch. The whole block must slide immediately.",
         ball: { x: 165, y: 250 },
+        ballAt: { x: 187, y: 273 },
+        carrier: "7",
         blues: {
           "1": { x: 440, y: 610 },
           "3": { x: 338, y: 485 },
@@ -823,6 +843,7 @@
           "8": { x: 412, y: 358 }
         },
         reds: {
+          "7": { x: 165, y: 250 },
           "9": { x: 455, y: 308 },
           "10": { x: 808, y: 250 },
           "11": { x: 160, y: 205 }
@@ -857,6 +878,8 @@
         do: "Press tight enough to stop the turn, while the partner screens the next pass.",
         dont: "Do not let both screeners collapse onto #9 and leave red #10 free inside.",
         ball: { x: 500, y: 314 },
+        ballAt: { x: 526, y: 344 },
+        carrier: "9",
         blues: {
           "1": { x: 500, y: 610 },
           "3": { x: 382, y: 500 },
@@ -865,6 +888,7 @@
           "8": { x: 562, y: 356 }
         },
         reds: {
+          "7": { x: 500, y: 205 },
           "9": { x: 500, y: 314 },
           "10": { x: 670, y: 260 },
           "11": { x: 312, y: 248 }
@@ -899,6 +923,8 @@
         do: "Step as a connected unit and keep the distances short.",
         dont: "Do not let only the presser go. A lone press opens space behind him.",
         ball: { x: 500, y: 178 },
+        ballAt: { x: 500, y: 213 },
+        carrier: "7",
         blues: {
           "1": { x: 500, y: 575 },
           "3": { x: 382, y: 452 },
@@ -907,6 +933,7 @@
           "8": { x: 550, y: 318 }
         },
         reds: {
+          "7": { x: 500, y: 178 },
           "9": { x: 500, y: 278 },
           "10": { x: 710, y: 235 },
           "11": { x: 290, y: 235 }
@@ -942,6 +969,8 @@
         do: "Read the pass early, step out under control, and communicate the recovery run.",
         dont: "Do not stay glued to the goal line when the line has pushed up.",
         ball: { x: 515, y: 378 },
+        ballAt: { x: 542, y: 402 },
+        carrier: "7",
         blues: {
           "1": { x: 515, y: 548 },
           "3": { x: 385, y: 448 },
@@ -950,6 +979,7 @@
           "8": { x: 555, y: 332 }
         },
         reds: {
+          "7": { x: 515, y: 378 },
           "9": { x: 500, y: 276 },
           "10": { x: 714, y: 236 },
           "11": { x: 292, y: 236 }
@@ -984,6 +1014,8 @@
         do: "Delay the carrier and rebuild the central gate before trying to tackle.",
         dont: "Do not have everyone dive at the ball. That creates a second central gap.",
         ball: { x: 405, y: 360 },
+        ballAt: { x: 430, y: 386 },
+        carrier: "10",
         blues: {
           "1": { x: 485, y: 610 },
           "3": { x: 360, y: 488 },
@@ -992,6 +1024,7 @@
           "8": { x: 502, y: 410 }
         },
         reds: {
+          "7": { x: 720, y: 246 },
           "9": { x: 500, y: 300 },
           "10": { x: 405, y: 360 },
           "11": { x: 174, y: 238 }
@@ -1095,6 +1128,16 @@
       svg.appendChild(g);
     }
 
+    function drawCarrierRing(svg, point, radius = 40, compact = false) {
+      svg.appendChild(svgEl("circle", {
+        class: "carrier-ring",
+        cx: point.x,
+        cy: point.y,
+        r: radius,
+        "stroke-width": compact ? 1.6 : 4
+      }));
+    }
+
     function drawZones(svg, zones = []) {
       zones.forEach((zone) => {
         const className = zone.type === "trap" ? "trap-zone" : zone.type === "danger" ? "danger-lane" : "compact-zone";
@@ -1128,9 +1171,12 @@
       drawPitch(mainSvg);
       drawZones(mainSvg, scenario.zones);
       drawArrows(mainSvg, scenario.arrows);
+      if (scenario.carrier && scenario.reds[scenario.carrier]) {
+        drawCarrierRing(mainSvg, scenario.reds[scenario.carrier]);
+      }
       Object.entries(scenario.reds).forEach(([number, point]) => drawPlayer(mainSvg, number, point, "red"));
       Object.entries(scenario.blues).forEach(([number, point]) => drawPlayer(mainSvg, number, point, "blue"));
-      drawBall(mainSvg, scenario.ball);
+      drawBall(mainSvg, scenario.ballAt || scenario.ball);
       drawNotes(mainSvg, scenario.notes);
 
       scenarioTitle.textContent = scenario.title;
@@ -1184,9 +1230,12 @@
         });
         svg.appendChild(svgEl("path", { class: className, d: scaledPath, "stroke-width": arrow.type === "press" ? 3 : 2.5 }));
       });
+      if (scenario.carrier && scenario.reds[scenario.carrier]) {
+        drawCarrierRing(svg, scalePoint(scenario.reds[scenario.carrier]), 16, true);
+      }
       Object.entries(scenario.reds).forEach(([number, point]) => drawPlayer(svg, number, scalePoint(point), "red", 13, true));
       Object.entries(scenario.blues).forEach(([number, point]) => drawPlayer(svg, number, scalePoint(point), "blue", 13, true));
-      drawBall(svg, scalePoint(scenario.ball), 7);
+      drawBall(svg, scalePoint(scenario.ballAt || scenario.ball), 7);
     }
 
     buttons.forEach((button) => {
