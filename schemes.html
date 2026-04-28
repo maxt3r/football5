@@ -1,0 +1,1665 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>5-a-side Defensive Schemes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --turf-1:#3a8a4a;
+    --turf-2:#34803f;
+    --turf-line:rgba(255,255,255,.92);
+    --ink:#0e1410;
+    --paper:#f3efe6;
+    --def:#1f6fd0;
+    --def-2:#3a8be8;
+    --gk:#f5c542;
+    --att:#d63b3b;
+    --ball:#f08a1a;
+    --zone:rgba(245,197,66,.18);
+    --zone-active:rgba(255,170,40,.34);
+    --press:#ff5b3a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:#1b1f1a;color:var(--paper);
+    font:14px/1.45 'Inter',ui-sans-serif,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .app{display:grid;grid-template-columns:300px 1fr 320px;height:100vh;min-height:680px}
+
+  /* Left: scheme switcher */
+  .sidebar{background:#11140f;border-right:1px solid #232821;padding:22px 20px;
+    display:flex;flex-direction:column;gap:18px;overflow-y:auto}
+  .brand{display:flex;align-items:baseline;gap:8px;letter-spacing:.02em}
+  .brand .dot{width:8px;height:8px;border-radius:50%;background:var(--ball);
+    display:inline-block;transform:translateY(-1px)}
+  .brand b{font-weight:700;font-size:13px}
+  .brand span{font-family:'JetBrains Mono',monospace;font-size:11px;
+    color:rgba(243,239,230,.5);text-transform:uppercase;letter-spacing:.12em}
+  h1{font-size:22px;font-weight:600;margin:0;letter-spacing:-.01em;line-height:1.15}
+  h1 em{font-style:normal;color:rgba(243,239,230,.55);font-weight:400}
+  .lede{font-size:12.5px;color:rgba(243,239,230,.6);margin:0;line-height:1.5}
+
+  .section-h{font:600 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;
+    text-transform:uppercase;color:rgba(243,239,230,.45);
+    padding-top:14px;border-top:1px solid #232821}
+
+  .schemes{display:flex;flex-direction:column;gap:6px}
+  .scheme{appearance:none;border:1px solid #232821;background:#161a14;
+    color:var(--paper);text-align:left;padding:11px 12px;border-radius:9px;
+    cursor:pointer;display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:center;
+    transition:background .15s ease,border-color .15s ease}
+  .scheme:hover{background:#1b2018;border-color:#2e3429}
+  .scheme[aria-pressed="true"]{background:#1f2a20;border-color:#3e6b40}
+  .scheme svg{width:34px;height:24px;display:block}
+  .scheme .nm{font-weight:600;font-size:13px;letter-spacing:-.005em}
+  .scheme .sub{font:500 10.5px/1.2 'JetBrains Mono',monospace;
+    color:rgba(243,239,230,.5);letter-spacing:.04em;margin-top:2px}
+
+  /* Center: pitch */
+  .stage{position:relative;display:flex;align-items:center;justify-content:center;
+    background:#1b1f1a;padding:24px;overflow:hidden;min-height:0}
+  .pitch-wrap{position:relative;aspect-ratio:100/140;
+    height:min(100%, calc(100vh - 48px));
+    max-width:100%;
+    width:auto}
+  .pitch{width:100%;height:100%;display:block;border-radius:14px;
+    box-shadow:0 30px 80px -30px rgba(0,0,0,.7),0 0 0 1px #0f130d}
+
+  .stage-hud{position:absolute;left:24px;top:24px;display:flex;flex-direction:column;gap:6px;
+    font:500 10.5px/1 'JetBrains Mono',monospace;letter-spacing:.08em;
+    color:rgba(243,239,230,.7);pointer-events:none}
+  .stage-hud .row{display:flex;align-items:center;gap:8px}
+  .stage-hud .swatch{width:9px;height:9px;border-radius:50%}
+
+  .stage-foot{position:absolute;left:24px;right:24px;bottom:18px;
+    display:flex;justify-content:space-between;align-items:center;
+    font:500 10.5px/1 'JetBrains Mono',monospace;color:rgba(243,239,230,.5);
+    text-transform:uppercase;letter-spacing:.14em;pointer-events:none}
+
+  /* Right: info panel */
+  .panel{background:#11140f;border-left:1px solid #232821;padding:22px 22px;
+    display:flex;flex-direction:column;gap:16px;overflow-y:auto}
+  .panel h2{font-size:18px;margin:0;font-weight:600;letter-spacing:-.01em}
+  .panel .meta{font:500 10.5px 'JetBrains Mono',monospace;letter-spacing:.1em;
+    color:rgba(243,239,230,.5);text-transform:uppercase;margin-top:-6px}
+  .panel p{margin:0;font-size:13px;line-height:1.55;color:rgba(243,239,230,.78)}
+
+  .pillars{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:2px}
+  .pillar{padding:10px 11px;border-radius:9px;border:1px solid #232821;
+    background:#161a14}
+  .pillar h4{margin:0 0 6px;font:600 10px 'JetBrains Mono',monospace;
+    letter-spacing:.1em;text-transform:uppercase}
+  .pillar.pro h4{color:#7ad28b}
+  .pillar.con h4{color:#e08585}
+  .pillar ul{margin:0;padding-left:14px;font-size:12px;line-height:1.5;
+    color:rgba(243,239,230,.78)}
+  .pillar li{margin-bottom:3px}
+  .pillar li:last-child{margin-bottom:0}
+
+  .legend{display:flex;flex-direction:column;gap:8px;border-top:1px solid #232821;padding-top:14px}
+  .legend h3{font:600 10px 'JetBrains Mono',monospace;letter-spacing:.12em;
+    color:rgba(243,239,230,.5);text-transform:uppercase;margin:0}
+  .legend-row{display:flex;align-items:center;gap:10px;font-size:12.5px;
+    color:rgba(243,239,230,.78)}
+  .legend-row .dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;
+    border:2px solid rgba(255,255,255,.85)}
+  .legend-row .line{width:18px;height:0;border-top:2px dashed currentColor;flex-shrink:0;
+    color:var(--ball)}
+  .legend-row .arrow{width:18px;height:10px;flex-shrink:0;color:#7ad28b}
+
+  .controls{display:flex;flex-direction:column;gap:8px;border-top:1px solid #232821;padding-top:14px}
+  .ctrl-row{display:flex;align-items:center;justify-content:space-between;font-size:12.5px}
+  .ctrl-row .lbl{color:rgba(243,239,230,.78)}
+  .switch{position:relative;width:32px;height:18px;border-radius:10px;background:#2a2f27;
+    cursor:pointer;transition:background .15s}
+  .switch[aria-checked="true"]{background:#3e6b40}
+  .switch::after{content:"";position:absolute;width:14px;height:14px;border-radius:50%;
+    background:#f3efe6;top:2px;left:2px;transition:transform .15s}
+  .switch[aria-checked="true"]::after{transform:translateX(14px)}
+
+  .reset{appearance:none;border:1px solid #2e3429;background:transparent;color:var(--paper);
+    padding:7px 10px;border-radius:8px;font:500 11px 'JetBrains Mono',monospace;
+    letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+  .reset:hover{background:#1b2018}
+
+  .footer{margin-top:auto;font:500 10px 'JetBrains Mono',monospace;
+    color:rgba(243,239,230,.4);letter-spacing:.1em;text-transform:uppercase}
+
+  /* Scenarios + POV */
+  .scenarios{display:flex;flex-direction:column;gap:5px}
+  .scenario-btn{appearance:none;border:1px solid #232821;background:#161a14;
+    color:var(--paper);text-align:left;padding:9px 11px;border-radius:8px;cursor:pointer;
+    font-size:12.5px;display:flex;align-items:center;gap:8px;
+    transition:background .15s,border-color .15s}
+  .scenario-btn:hover{background:#1b2018;border-color:#2e3429}
+  .scenario-btn[aria-pressed="true"]{background:#2a1c14;border-color:#7a4225;color:#ffd6b8}
+  .scenario-btn .nm{font-weight:500}
+  .scenario-btn .desc{margin-left:auto;color:rgba(243,239,230,.45);
+    font:500 10px 'JetBrains Mono',monospace;letter-spacing:.06em}
+  .pov-card{border:1px solid #2e4a30;background:linear-gradient(180deg,#1a2a1d,#142318);
+    border-radius:9px;padding:11px 12px;display:flex;flex-direction:column;gap:5px}
+  .pov-card .pov-label{font:600 10px 'JetBrains Mono',monospace;letter-spacing:.12em;
+    text-transform:uppercase;color:#9ce0a8}
+  .pov-card .pov-tip{font-size:12.5px;line-height:1.5;color:rgba(243,239,230,.85)}
+  .pov-select{appearance:none;border:1px solid #232821;background:#161a14;color:var(--paper);
+    padding:6px 10px;border-radius:7px;font:inherit;font-size:12.5px;width:100%;cursor:pointer}
+
+  /* Drill mode */
+  .drill-toggle{appearance:none;border:1px solid #2e3429;background:#161a14;
+    color:var(--paper);padding:10px 12px;border-radius:9px;cursor:pointer;
+    font:600 11px 'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    transition:background .15s,border-color .15s,color .15s}
+  .drill-toggle:hover{background:#1b2018;border-color:#3e6b40}
+  .drill-toggle[aria-pressed="true"]{background:#2a1c14;border-color:#7a4225;color:#ffd6b8}
+  .drill-panel{display:flex;flex-direction:column;gap:14px;flex:1;min-height:0}
+  .drill-streak{display:flex;align-items:center;justify-content:space-between;
+    font:600 10.5px 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;
+    color:rgba(243,239,230,.6)}
+  .drill-streak b{color:#9ce0a8;font-size:13px;letter-spacing:.06em}
+  .drill-prompt{font-size:14px;line-height:1.55;color:var(--paper);margin:0}
+  .drill-tag{display:inline-block;font:600 10px 'JetBrains Mono',monospace;
+    letter-spacing:.1em;text-transform:uppercase;color:rgba(243,239,230,.55);
+    background:#161a14;border:1px solid #232821;padding:3px 8px;border-radius:5px;
+    margin-right:6px}
+  .drill-actions{display:flex;gap:8px}
+  .drill-btn{appearance:none;flex:1;border:1px solid #2e3429;background:#161a14;
+    color:var(--paper);padding:9px 12px;border-radius:8px;cursor:pointer;
+    font:600 11.5px 'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase}
+  .drill-btn.primary{background:#3e6b40;border-color:#4f8a52}
+  .drill-btn.primary:hover{background:#4a7c4d}
+  .drill-btn:hover{background:#1b2018}
+  .verdict{padding:11px 12px;border-radius:9px;border:1px solid;
+    display:flex;flex-direction:column;gap:6px}
+  .verdict.on{background:rgba(62,107,64,.18);border-color:#4f8a52;color:#c8ecc9}
+  .verdict.almost{background:rgba(180,140,40,.16);border-color:#a37a30;color:#f0d999}
+  .verdict.off{background:rgba(180,60,50,.14);border-color:#a04640;color:#f0bdb6}
+  .verdict .vh{font:600 11px 'JetBrains Mono',monospace;letter-spacing:.12em;
+    text-transform:uppercase;display:flex;justify-content:space-between}
+  .verdict .vw{font-size:12.5px;line-height:1.55;color:rgba(243,239,230,.85)}
+  .ghost-q{cursor:grab}
+  .ghost-q.dragging{cursor:grabbing}
+  .ghost-q-stroke{fill:none;stroke:#ffea7a;stroke-width:.65;stroke-dasharray:1.6 1.4}
+  .ghost-q-fill{fill:rgba(255,234,122,.18);stroke:none}
+  .ghost-q-text{font:700 4.5px 'Inter',sans-serif;fill:#ffea7a;
+    text-anchor:middle;dominant-baseline:central;pointer-events:none;user-select:none}
+  .correct-overlay{fill:rgba(122,210,139,.22);stroke:#7ad28b;stroke-width:.75;
+    stroke-dasharray:2 1.4}
+  .correct-overlay-line{stroke:#7ad28b;stroke-width:.55;stroke-dasharray:1 1.2;opacity:.75}
+  .correct-overlay-text{font:600 2.4px 'JetBrains Mono',monospace;
+    fill:#9ce0a8;text-anchor:middle;letter-spacing:.08em;pointer-events:none}
+
+  /* SVG */
+  .player{cursor:grab}
+  .player.dragging{cursor:grabbing}
+  .player-circle{stroke:#fff;stroke-width:2.2;filter:drop-shadow(0 2px 4px rgba(0,0,0,.35))}
+  .player-num{font:700 4px 'Inter',sans-serif;fill:#fff;text-anchor:middle;
+    dominant-baseline:central;pointer-events:none;user-select:none}
+  .player-role{font:600 2.2px 'JetBrains Mono',monospace;letter-spacing:.08em;
+    fill:rgba(255,255,255,.92);text-anchor:middle;pointer-events:none;user-select:none}
+  .ball-shadow{fill:rgba(0,0,0,.35)}
+  .ball-circle{fill:var(--ball);stroke:#fff;stroke-width:1.8;
+    filter:drop-shadow(0 3px 5px rgba(0,0,0,.4))}
+  .lane{stroke:var(--ball);stroke-width:2;stroke-dasharray:5 4;fill:none;opacity:.7}
+  .shoot-lane{stroke:#ffd66e;stroke-width:2.5;fill:none;opacity:.7;stroke-dasharray:none}
+  .arrow{stroke:#9ce0a8;stroke-width:1.8;fill:none;opacity:.85}
+  .arrow-head{fill:#9ce0a8}
+  .zone{fill:var(--zone);stroke:rgba(245,197,66,.5);stroke-width:1.2;stroke-dasharray:3 3}
+  .zone.active{fill:var(--zone-active);stroke:rgba(255,170,40,.85)}
+  .press-glow{fill:rgba(255,91,58,.14);stroke:var(--press);stroke-width:1.5;
+    stroke-dasharray:4 3;animation:pulse 1.4s ease-in-out infinite}
+  @keyframes pulse{
+    0%,100%{opacity:.55}
+    50%{opacity:1}
+  }
+  .ghost{opacity:.32}
+  .player.faded{opacity:.28;transition:opacity .25s}
+  @keyframes you-pulse{
+    0%,100%{opacity:.55;transform:scale(1)}
+    50%{opacity:.15;transform:scale(1.18)}
+  }
+  .you-pulse{fill:none;stroke:#ffea7a;stroke-width:.7;
+    transform-origin:center;transform-box:fill-box;
+    animation:you-pulse 1.6s ease-in-out infinite}
+  .you-ring{fill:none;stroke:#ffea7a;stroke-width:.55}
+  .heat-cell,.cov-cell{pointer-events:none}
+
+  @media (max-width:1100px){
+    .app{grid-template-columns:260px 1fr 280px}
+  }
+  @media (max-width:880px){
+    .app{grid-template-columns:1fr;grid-template-rows:auto 1fr auto}
+    .sidebar,.panel{max-height:none}
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useMemo, useRef, useCallback } = React;
+
+// ───────── schemes data ─────────
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+const ROLES = {
+  GK: { color: '#f5c542', label: 'GK' },
+  D:  { color: '#1f6fd0', label: 'D'  },
+  M:  { color: '#3a8be8', label: 'M'  },
+  F:  { color: '#7bb6ff', label: 'F'  },
+};
+
+const SCHEMES = [
+  {
+    id: 'diamond',
+    name: '1–2–1 Diamond',
+    shorthand: '1·2·1',
+    tagline: 'The classic. Balanced spine, one back, one up top.',
+    description:
+      'A vertical diamond: one defender anchors in front of the GK, two wide midfielders cover the channels, and a forward presses high. The shape pivots around the ball — the diamond tilts to the ball-side while the far-side mid tucks in to cover the back.',
+    pros: ['Balanced cover front-to-back', 'Natural passing triangles', 'Clear roles'],
+    cons: ['Wide channels exposed if mids late', 'Single anchor isolated vs 2-on-1'],
+    triggers: 'Forward presses when ball enters the top third. Mids step when ball reaches their wing.',
+    base: [
+      { id:'gk', role:'GK', num:1, x:50, y:8  },
+      { id:'d1', role:'D',  num:4, x:50, y:28 },
+      { id:'m1', role:'M',  num:6, x:26, y:55 },
+      { id:'m2', role:'M',  num:8, x:74, y:55 },
+      { id:'f1', role:'F',  num:9, x:50, y:82 },
+    ],
+    shift(bx, by) {
+      const ballSide = (bx - 50) / 50;
+      const advance = clamp((by - 50) / 70, 0, 1);
+      return this.base.map(p => {
+        if (p.role === 'GK') return { ...p, x: clamp(50 + ballSide * 8, 38, 62), y: 8 };
+        if (p.id === 'd1')   return { ...p, x: clamp(50 + ballSide * 14, 30, 70),
+                                            y: clamp(28 + advance * -6, 18, 30) };
+        if (p.id === 'm1')   return { ...p, x: clamp(26 + ballSide * 18, 14, 48),
+                                            y: clamp(55 + advance * -10, 38, 60) };
+        if (p.id === 'm2')   return { ...p, x: clamp(74 + ballSide * 18, 52, 86),
+                                            y: clamp(55 + advance * -10, 38, 60) };
+        if (p.id === 'f1')   return { ...p, x: clamp(50 + ballSide * 22, 22, 78),
+                                            y: clamp(82 + advance * -8, 60, 95) };
+        return p;
+      });
+    },
+    pressZone: { x:20, y:62, w:60, h:34 },
+  },
+  {
+    id: 'box',
+    name: '2–2 Box',
+    shorthand: '2·2',
+    tagline: 'Two banks of two. Compact, hard to break centrally.',
+    description:
+      'Two defenders sit, two midfielders ahead. The whole box slides as one unit toward the ball. Strong centrally — attackers must beat two lines to score — but the wings live and die on midfielder discipline.',
+    pros: ['Numerical security in middle', 'Easy second-ball recovery', 'Simple to coach'],
+    cons: ['No natural high pressure', 'Can be pinned deep', 'Wings stretched 1-on-1'],
+    triggers: 'Midfield line steps to press when ball crosses the halfway line on their side.',
+    base: [
+      { id:'gk', role:'GK', num:1, x:50, y:8  },
+      { id:'d1', role:'D',  num:3, x:32, y:26 },
+      { id:'d2', role:'D',  num:5, x:68, y:26 },
+      { id:'m1', role:'M',  num:6, x:32, y:58 },
+      { id:'m2', role:'M',  num:8, x:68, y:58 },
+    ],
+    shift(bx, by) {
+      const sx = (bx - 50) / 50;
+      const advance = clamp((by - 50) / 70, 0, 1);
+      return this.base.map(p => {
+        if (p.role === 'GK') return { ...p, x: clamp(50 + sx * 8, 38, 62), y: 8 };
+        if (p.role === 'D')  return { ...p, x: clamp(p.x + sx * 12, 18, 82),
+                                            y: clamp(p.y + advance * -3, 18, 30) };
+        if (p.role === 'M')  return { ...p, x: clamp(p.x + sx * 18, 14, 86),
+                                            y: clamp(p.y + advance * -10, 40, 62) };
+        return p;
+      });
+    },
+    pressZone: { x:10, y:55, w:80, h:30 },
+  },
+  {
+    id: 'y',
+    name: '1–1–2 Y',
+    shorthand: '1·1·2',
+    tagline: 'Anchor, pivot, two up top. Aggressive press shape.',
+    description:
+      'One defender anchors, a single pivot mid shields and links, two forwards press high in tandem. Designed to win the ball high and counter — but if the press is bypassed, the pivot is alone in front of a single defender.',
+    pros: ['High pressing pairs', 'Quick counter outlets', 'Disorients build-up'],
+    cons: ['Big gap if press broken', 'Pivot does enormous work', 'Weak vs long-ball over the top'],
+    triggers: 'Forwards press as a pair when ball enters opposing half. Pivot screens the gap.',
+    base: [
+      { id:'gk', role:'GK', num:1, x:50, y:8  },
+      { id:'d1', role:'D',  num:4, x:50, y:26 },
+      { id:'m1', role:'M',  num:6, x:50, y:52 },
+      { id:'f1', role:'F',  num:9, x:34, y:84 },
+      { id:'f2', role:'F',  num:11,x:66, y:84 },
+    ],
+    shift(bx, by) {
+      const sx = (bx - 50) / 50;
+      const advance = clamp((by - 50) / 70, 0, 1);
+      return this.base.map(p => {
+        if (p.role === 'GK') return { ...p, x: clamp(50 + sx * 8, 38, 62), y: 8 };
+        if (p.id === 'd1')   return { ...p, x: clamp(50 + sx * 12, 32, 68),
+                                            y: clamp(26 + advance * -4, 18, 28) };
+        if (p.id === 'm1')   return { ...p, x: clamp(50 + sx * 16, 28, 72),
+                                            y: clamp(52 + advance * -8, 38, 56) };
+        if (p.id === 'f1')   return { ...p, x: clamp(34 + sx * 20, 14, 56),
+                                            y: clamp(84 + advance * -6, 64, 95) };
+        if (p.id === 'f2')   return { ...p, x: clamp(66 + sx * 20, 44, 86),
+                                            y: clamp(84 + advance * -6, 64, 95) };
+        return p;
+      });
+    },
+    pressZone: { x:8, y:65, w:84, h:32 },
+  },
+  {
+    id: 'invy',
+    name: '2–1–1 Inverted Y',
+    shorthand: '2·1·1',
+    tagline: 'Two-back base, lone pivot, single striker. Defense first.',
+    description:
+      'Two defenders give a stable base, a single pivot drops between or pushes up, one forward harasses the build-up. The most defensively sound shape — ideal when protecting a lead or playing a stronger side.',
+    pros: ['Two-on-most attacks at the back', 'Easy to keep compact', 'Counter via pivot+forward'],
+    cons: ['Forward isolated', 'Hard to sustain pressure', 'Pivot must read the game'],
+    triggers: 'Forward shadows ball-near defender. Pivot jumps when ball enters middle third.',
+    base: [
+      { id:'gk', role:'GK', num:1, x:50, y:8  },
+      { id:'d1', role:'D',  num:3, x:32, y:24 },
+      { id:'d2', role:'D',  num:5, x:68, y:24 },
+      { id:'m1', role:'M',  num:6, x:50, y:52 },
+      { id:'f1', role:'F',  num:9, x:50, y:82 },
+    ],
+    shift(bx, by) {
+      const sx = (bx - 50) / 50;
+      const advance = clamp((by - 50) / 70, 0, 1);
+      return this.base.map(p => {
+        if (p.role === 'GK') return { ...p, x: clamp(50 + sx * 8, 38, 62), y: 8 };
+        if (p.id === 'd1')   return { ...p, x: clamp(32 + sx * 12, 18, 50),
+                                            y: clamp(24 + advance * -4, 16, 28) };
+        if (p.id === 'd2')   return { ...p, x: clamp(68 + sx * 12, 50, 82),
+                                            y: clamp(24 + advance * -4, 16, 28) };
+        if (p.id === 'm1')   return { ...p, x: clamp(50 + sx * 16, 28, 72),
+                                            y: clamp(52 + advance * -8, 36, 58) };
+        if (p.id === 'f1')   return { ...p, x: clamp(50 + sx * 20, 24, 76),
+                                            y: clamp(82 + advance * -8, 60, 95) };
+        return p;
+      });
+    },
+    pressZone: { x:18, y:55, w:64, h:38 },
+  },
+  {
+    id: 'manmark',
+    name: 'Man-to-man',
+    shorthand: 'M·M',
+    tagline: 'Each defender locks onto an attacker. No safe pass.',
+    description:
+      'Every outfield defender is paired with one attacker — they go where their man goes. Completely denies time on the ball, but a single beaten duel collapses the entire system. Demands fitness and trust.',
+    pros: ['No free receivers', 'Uncomfortable for skill players', 'Forces hurried decisions'],
+    cons: ['One mistake = chance', 'Easy to drag out of shape', 'High physical cost'],
+    triggers: 'Whole team presses on transition. Defenders track runners to halfway and beyond.',
+    base: [
+      { id:'gk', role:'GK', num:1, x:50, y:8  },
+      { id:'d1', role:'D',  num:3, x:30, y:30 },
+      { id:'d2', role:'D',  num:5, x:70, y:30 },
+      { id:'m1', role:'M',  num:6, x:35, y:65 },
+      { id:'f1', role:'F',  num:9, x:65, y:65 },
+    ],
+    shift(bx, by) {
+      const sx = (bx - 50) / 50;
+      return this.base.map(p => {
+        if (p.role === 'GK') return { ...p, x: clamp(50 + sx * 8, 38, 62), y: 8 };
+        return { ...p, x: clamp(p.x + sx * 8, 12, 88) };
+      });
+    },
+    pressZone: { x:8, y:40, w:84, h:55 },
+    manMark: true,
+  },
+];
+
+const ATTACKERS_DEFAULT = [
+  { id:'a1', num:7,  x:30, y:75 },
+  { id:'a2', num:10, x:70, y:75 },
+  { id:'a3', num:11, x:50, y:60 },
+  { id:'a4', num:9,  x:50, y:95 },
+];
+
+const BALL_DEFAULT = { x:50, y:65 };
+
+// ───────── drills ─────────
+const DRILLS = [
+  // ── BACK ──
+  {
+    id: 'back-anchor', role: 'back', concept: 'Anchor central', scheme: 'diamond', hideId: 'd1',
+    ball: { x:50, y:60 },
+    attackers: [{id:'a1',num:7,x:30,y:72},{id:'a2',num:10,x:70,y:72},{id:'a3',num:11,x:50,y:55},{id:'a4',num:9,x:50,y:90}],
+    correct: { x:50, y:28 }, ghostStart: { x:25, y:38 },
+    prompt: "You're the BACK in 1·2·1 Diamond. Ball is central, carrier directly in front. Where do you anchor?",
+    why: "Stay central, in front of your goal. You're the last outfield man — never get pulled wide unless absolutely forced. Make them beat you through the middle or pass to a covered teammate.",
+  },
+  {
+    id: 'back-slide', role: 'back', concept: 'Slide on switch', scheme: 'box', hideId: 'd2',
+    ball: { x:80, y:55 },
+    attackers: [{id:'a1',num:7,x:22,y:75},{id:'a2',num:10,x:80,y:55},{id:'a3',num:11,x:50,y:40},{id:'a4',num:9,x:50,y:95}],
+    correct: { x:62, y:24 }, ghostStart: { x:32, y:36 },
+    prompt: "You're the right BACK in 2·2 Box. The ball just got switched to your wing. Where do you slide to?",
+    why: "Shift toward the ball but stay goalside. Don't chase the carrier all the way to the touchline — your back line collapses if you do. Hand off wide pressure to your mid; you keep central cover.",
+  },
+  {
+    id: 'back-cover-runner', role: 'back', concept: 'Track the runner', scheme: 'invy', hideId: 'd1',
+    ball: { x:65, y:55 },
+    attackers: [{id:'a1',num:7,x:42,y:42},{id:'a2',num:10,x:65,y:55},{id:'a3',num:11,x:30,y:78},{id:'a4',num:9,x:50,y:95}],
+    correct: { x:42, y:30 }, ghostStart: { x:25, y:26 },
+    prompt: "You're the left BACK in 2·1·1. An attacker is making a forward run between you and your partner. Where do you go?",
+    why: "Don't ball-watch — the runner is the danger. Track him goalside, stay tight enough to deny a through-ball. Trust your partner to handle the carrier.",
+  },
+  {
+    id: 'back-2v1', role: 'back', concept: '2v1 — pick the threat', scheme: 'y', hideId: 'd1',
+    ball: { x:55, y:48 },
+    attackers: [{id:'a1',num:7,x:40,y:40},{id:'a2',num:10,x:60,y:40},{id:'a3',num:11,x:20,y:80},{id:'a4',num:9,x:70,y:90}],
+    correct: { x:50, y:22 }, ghostStart: { x:35, y:30 },
+    prompt: "You're the BACK in 1·1·2 Y. The press got broken — 2-on-1 running at you. Where do you stand?",
+    why: "Don't commit to either attacker yet. Stay central, retreat slowly, force the carrier to make a decision. Every second buys help arriving — diving in lets the carrier pick the easier finish.",
+  },
+
+  // ── MID ──
+  {
+    id: 'mid-step-ballside', role: 'mid', concept: 'Step to ball-side', scheme: 'diamond', hideId: 'm1',
+    ball: { x:24, y:60 },
+    attackers: [{id:'a1',num:7,x:22,y:62},{id:'a2',num:10,x:72,y:75},{id:'a3',num:11,x:50,y:55},{id:'a4',num:9,x:50,y:90}],
+    correct: { x:22, y:48 }, ghostStart: { x:48, y:55 },
+    prompt: "You're the left MID in 1·2·1 Diamond. The ball just arrived on your wing. Where do you step?",
+    why: "Close the carrier on your side. Get tight enough to deny the turn but body-angled inside-on so you cut the central pass. Don't get dragged past the touchline.",
+  },
+  {
+    id: 'mid-tuck-farside', role: 'mid', concept: 'Tuck on far side', scheme: 'diamond', hideId: 'm2',
+    ball: { x:24, y:60 },
+    attackers: [{id:'a1',num:7,x:22,y:62},{id:'a2',num:10,x:55,y:55},{id:'a3',num:11,x:50,y:42},{id:'a4',num:9,x:70,y:80}],
+    correct: { x:54, y:54 }, ghostStart: { x:78, y:55 },
+    prompt: "You're the right MID in 1·2·1 Diamond. The ball is on the OPPOSITE wing. Where do you tuck?",
+    why: "Far-side mids tuck centrally. Your job is to cover the second runner and the diagonal switch. Staying wide leaves the middle wide open for a through-ball.",
+  },
+  {
+    id: 'mid-screen-pivot', role: 'mid', concept: 'Screen the pivot', scheme: 'box', hideId: 'm1',
+    ball: { x:35, y:78 },
+    attackers: [{id:'a1',num:7,x:35,y:78},{id:'a2',num:10,x:65,y:80},{id:'a3',num:11,x:45,y:58},{id:'a4',num:9,x:50,y:95}],
+    correct: { x:42, y:62 }, ghostStart: { x:32, y:58 },
+    prompt: "You're the left MID in 2·2 Box. Their pivot is showing for the ball in front of you. Where do you stand?",
+    why: "Get on the passing lane between carrier and pivot — body angled so you can see both. Don't ball-watch the carrier; the pivot is the dangerous receiver.",
+  },
+
+  // ── BOX SPECIALIST ──
+  {
+    id: 'box-back-line', role: 'back', concept: 'Box · don\'t get dragged out', scheme: 'box', hideId: 'd1',
+    ball: { x:75, y:78 },
+    attackers: [{id:'a1',num:7,x:18,y:48},{id:'a2',num:10,x:75,y:78},{id:'a3',num:11,x:50,y:42},{id:'a4',num:9,x:50,y:95}],
+    correct: { x:40, y:26 }, ghostStart: { x:18, y:32 },
+    prompt: "You're the left BACK in 2·2 Box. Ball is on your partner's wing. An attacker is drifting wide on YOUR side. Where do you stand?",
+    why: "Don't follow the wide drifter — that's the trap. Stay central with your partner; an isolated wide attacker is no threat without service. The Box only works if the back two stay compact.",
+  },
+  {
+    id: 'box-back-pocket', role: 'back', concept: 'Box · step to the pocket', scheme: 'box', hideId: 'd1',
+    ball: { x:48, y:48 },
+    attackers: [{id:'a1',num:7,x:40,y:75},{id:'a2',num:10,x:65,y:75},{id:'a3',num:11,x:48,y:48},{id:'a4',num:9,x:50,y:95}],
+    correct: { x:48, y:38 }, ghostStart: { x:32, y:26 },
+    prompt: "You're the left BACK in 2·2 Box. Their attacker just received in the pocket between your lines, central. Where do you go?",
+    why: "Step up and engage — don't let them turn and shoot from the danger zone. Your partner stays deep to cover. Hesitation here = goal.",
+  },
+  {
+    id: 'box-back-corner', role: 'back', concept: 'Box · cover the corner', scheme: 'box', hideId: 'd2',
+    ball: { x:82, y:18 },
+    attackers: [{id:'a1',num:7,x:82,y:18},{id:'a2',num:10,x:42,y:14},{id:'a3',num:11,x:55,y:10},{id:'a4',num:9,x:50,y:40}],
+    correct: { x:55, y:14 }, ghostStart: { x:80, y:20 },
+    prompt: "You're the right BACK in 2·2 Box. Ball is deep wide near your corner. Two attackers are in the goal area waiting for the cross. Where do you stand?",
+    why: "Cover central in the goal mouth — that's where the cross lands. Let your mid engage the wide carrier. Drifting to the touchline leaves both runners free in front of goal.",
+  },
+  {
+    id: 'box-back-2v2', role: 'back', concept: 'Box · 2v2 hold shape', scheme: 'box', hideId: 'd1',
+    ball: { x:38, y:42 },
+    attackers: [{id:'a1',num:7,x:38,y:42},{id:'a2',num:10,x:62,y:42},{id:'a3',num:11,x:30,y:75},{id:'a4',num:9,x:65,y:80}],
+    correct: { x:38, y:30 }, ghostStart: { x:50, y:28 },
+    prompt: "You're the left BACK in 2·2 Box. Both your mids got beaten — 2v2 running at the back line. Where do you stand?",
+    why: "Pick up your man (the carrier on your side). Your partner takes theirs. Stay 1v1, on your feet, force a hurried decision. Drifting centrally means BOTH attackers face one defender — disaster.",
+  },
+  {
+    id: 'box-mid-trigger', role: 'mid', concept: 'Box · press trigger', scheme: 'box', hideId: 'm1',
+    ball: { x:30, y:62 },
+    attackers: [{id:'a1',num:7,x:30,y:62},{id:'a2',num:10,x:72,y:80},{id:'a3',num:11,x:45,y:80},{id:'a4',num:9,x:55,y:100}],
+    correct: { x:30, y:53 }, ghostStart: { x:32, y:58 },
+    prompt: "You're the left MID in 2·2 Box. Ball just crossed halfway on YOUR side. What now?",
+    why: "This is your trigger — step up tight to the carrier and close them down before they turn. Wait and they pick a pass through your line. The Box's only press window is when the ball arrives on your wing.",
+  },
+  {
+    id: 'box-mid-tuck', role: 'mid', concept: 'Box · tuck on far side', scheme: 'box', hideId: 'm2',
+    ball: { x:22, y:60 },
+    attackers: [{id:'a1',num:7,x:22,y:60},{id:'a2',num:10,x:55,y:55},{id:'a3',num:11,x:68,y:75},{id:'a4',num:9,x:50,y:90}],
+    correct: { x:50, y:56 }, ghostStart: { x:78, y:55 },
+    prompt: "You're the right MID in 2·2 Box. Ball is on the OPPOSITE wing. Where do you tuck?",
+    why: "Tuck central — the Box only stays compact when the far-side mid steps inside. Wide is wasted; the danger is the diagonal pass into central space. You're not abandoning your wing, you're covering the next pass.",
+  },
+  {
+    id: 'box-mid-drop', role: 'mid', concept: 'Box · drop to compact', scheme: 'box', hideId: 'm1',
+    ball: { x:48, y:78 },
+    attackers: [{id:'a1',num:7,x:48,y:78},{id:'a2',num:10,x:65,y:75},{id:'a3',num:11,x:50,y:52},{id:'a4',num:9,x:50,y:95}],
+    correct: { x:42, y:55 }, ghostStart: { x:32, y:58 },
+    prompt: "You're the left MID in 2·2 Box. Their pivot is dropping into the gap between your mid line and back line. Where do you go?",
+    why: "Drop with the pivot — close the gap between the two banks. If you stay high, they thread a pass through and your backs face a runner with momentum. Compactness is the Box's whole point.",
+  },
+  {
+    id: 'mid-recovery', role: 'mid', concept: 'Recovery — get goalside', scheme: 'y', hideId: 'm1',
+    ball: { x:55, y:38 },
+    attackers: [{id:'a1',num:7,x:40,y:30},{id:'a2',num:10,x:65,y:32},{id:'a3',num:11,x:55,y:38},{id:'a4',num:9,x:50,y:85}],
+    correct: { x:52, y:30 }, ghostStart: { x:55, y:55 },
+    prompt: "You're the MID in 1·1·2 Y. Your forwards' press got broken — carrier is past you. Where do you recover to?",
+    why: "Sprint goalside of the ball on the shortest line. You're not chasing the carrier — you're rebuilding the line in front of your back. First job: be between ball and goal.",
+  },
+
+  // ── FORWARD ──
+  {
+    id: 'fwd-funnel', role: 'fwd', concept: 'Funnel inside', scheme: 'diamond', hideId: 'f1',
+    ball: { x:25, y:105 },
+    attackers: [{id:'a1',num:7,x:25,y:105},{id:'a2',num:10,x:75,y:100},{id:'a3',num:11,x:45,y:80},{id:'a4',num:9,x:55,y:120}],
+    correct: { x:35, y:92 }, ghostStart: { x:50, y:82 },
+    prompt: "You're the FORWARD in 1·2·1 Diamond. Their back has the ball wide. Where do you press?",
+    why: "Approach from the inside — your body shape should cut off the central pass. Force them to pass backward or down the line, where your mid can pressure. Never run straight at them; that opens the easy switch.",
+  },
+  {
+    id: 'fwd-shadow', role: 'fwd', concept: 'Shadow — outnumbered', scheme: 'invy', hideId: 'f1',
+    ball: { x:50, y:100 },
+    attackers: [{id:'a1',num:7,x:30,y:92},{id:'a2',num:10,x:70,y:92},{id:'a3',num:11,x:50,y:100},{id:'a4',num:9,x:50,y:120}],
+    correct: { x:50, y:78 }, ghostStart: { x:30, y:78 },
+    prompt: "You're the lone FORWARD in 2·1·1. Their back has it centrally. Where do you stand?",
+    why: "You're outnumbered — don't chase. Shadow from a couple meters off, body angled to deny the central pass. Your goal is delay, not steal. Help is coming from your pivot.",
+  },
+  {
+    id: 'fwd-press-trigger', role: 'fwd', concept: 'Press the isolated carrier', scheme: 'y', hideId: 'f1',
+    ball: { x:25, y:95 },
+    attackers: [{id:'a1',num:7,x:25,y:95},{id:'a2',num:10,x:70,y:75},{id:'a3',num:11,x:55,y:55},{id:'a4',num:9,x:50,y:120}],
+    correct: { x:26, y:82 }, ghostStart: { x:34, y:84 },
+    prompt: "You're the left FORWARD in 1·1·2 Y. The carrier is wide with NO close support. What now?",
+    why: "Trigger! Press hard and tight — isolated carrier with no out-ball is your moment. Win it or force a hopeful long ball. Hesitating wastes the trigger.",
+  },
+  {
+    id: 'fwd-drop-screen', role: 'fwd', concept: 'Drop in to screen', scheme: 'diamond', hideId: 'f1',
+    ball: { x:55, y:50 },
+    attackers: [{id:'a1',num:7,x:30,y:75},{id:'a2',num:10,x:70,y:75},{id:'a3',num:11,x:55,y:50},{id:'a4',num:9,x:50,y:95}],
+    correct: { x:50, y:62 }, ghostStart: { x:50, y:82 },
+    prompt: "You're the FORWARD in 1·2·1 Diamond. Your press got bypassed — the ball is now in the middle. Where do you go?",
+    why: "Don't keep chasing. Drop in front of your mids and become a screen — you're an extra defensive layer now. Your next chance to press is when they go backward.",
+  },
+];
+
+const PROGRESS_KEY = 'minitactics.drill.progress';
+const VERDICT_RANK = { off: 0, almost: 1, on: 2 };
+function loadProgress() {
+  try { return JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}'); }
+  catch { return {}; }
+}
+function saveProgress(p) {
+  try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(p)); } catch {}
+}
+function recordResult(progress, id, verdict) {
+  const prev = progress[id] || { attempts: 0, bestResult: 'off' };
+  const best = VERDICT_RANK[verdict] > VERDICT_RANK[prev.bestResult] ? verdict : prev.bestResult;
+  return { ...progress, [id]: { attempts: prev.attempts + 1, bestResult: best } };
+}
+
+// ───────── threat heatmap ─────────
+function computeThreat(cx, cy, defenders) {
+  const distToGoal = Math.hypot(cx - 50, cy - 2);
+  if (distToGoal > 75 || cy < 6) return 0;
+  // Sample 3 points across the goal mouth; count unblocked shot lines.
+  const goalSamples = [40, 50, 60];
+  let openShares = 0;
+  for (const gx of goalSamples) {
+    let blocked = false;
+    const dx = gx - cx, dy = 2 - cy;
+    const d2 = dx*dx + dy*dy;
+    for (const D of defenders) {
+      const t = ((D.x - cx) * dx + (D.y - cy) * dy) / d2;
+      if (t < 0.05 || t > 0.97) continue;
+      const px = cx + t * dx, py = cy + t * dy;
+      const dist = Math.hypot(D.x - px, D.y - py);
+      if (dist < (D.role === 'GK' ? 7 : 4.6)) { blocked = true; break; }
+    }
+    if (!blocked) openShares += 1;
+  }
+  const openFrac = openShares / goalSamples.length;
+  const distFactor = Math.max(0, 1 - distToGoal / 70);
+  return Math.pow(distFactor, 1.4) * openFrac;
+}
+
+function Heatmap({ defenders, show }) {
+  if (!show) return null;
+  const STEP = 7;
+  const cells = [];
+  for (let cy = 6; cy < 100; cy += STEP) {
+    for (let cx = 0; cx < 100; cx += STEP) {
+      const t = computeThreat(cx + STEP/2, cy + STEP/2, defenders);
+      if (t < 0.05) continue;
+      const r = Math.min(255, Math.round(255 * Math.min(1, t * 1.6)));
+      const g = Math.round(220 * Math.max(0, 1 - t * 1.5));
+      const a = 0.06 + t * 0.4;
+      cells.push(
+        <rect key={`h${cx}-${cy}`} className="heat-cell"
+              x={cx} y={cy} width={STEP} height={STEP}
+              fill={`rgba(${r},${g},60,${a})`}/>
+      );
+    }
+  }
+  return <g pointerEvents="none">{cells}</g>;
+}
+
+// ───────── coverage zones (Voronoi) ─────────
+function Coverage({ defenders, show }) {
+  if (!show) return null;
+  const STEP = 4;
+  const cells = [];
+  for (let cy = 0; cy < 140; cy += STEP) {
+    for (let cx = 0; cx < 100; cx += STEP) {
+      let best = null, bestD = Infinity;
+      for (const D of defenders) {
+        const d = Math.hypot(D.x - (cx + STEP/2), D.y - (cy + STEP/2));
+        if (d < bestD) { bestD = d; best = D; }
+      }
+      if (!best || bestD > 24) continue;
+      const a = Math.max(0.02, 0.18 - bestD / 200);
+      cells.push(
+        <rect key={`c${cx}-${cy}`} className="cov-cell"
+              x={cx} y={cy} width={STEP} height={STEP}
+              fill={ROLES[best.role].color} fillOpacity={a}/>
+      );
+    }
+  }
+  return <g pointerEvents="none">{cells}</g>;
+}
+
+// ───────── scenarios ─────────
+const SCENARIOS = [
+  {
+    id: 'wing', name: 'Wing overload', desc: '6s', duration: 6000,
+    tip: 'Watch the defense slide ball-side, then chase the diagonal advance.',
+    keyframes: [
+      { t:0,    ball:{x:50,y:65}, atk:[{id:'a1',x:30,y:75},{id:'a2',x:70,y:75},{id:'a3',x:50,y:60},{id:'a4',x:50,y:95}] },
+      { t:0.45, ball:{x:80,y:55}, atk:[{id:'a1',x:30,y:75},{id:'a2',x:80,y:55},{id:'a3',x:65,y:46},{id:'a4',x:50,y:90}] },
+      { t:0.85, ball:{x:80,y:28}, atk:[{id:'a1',x:30,y:75},{id:'a2',x:80,y:28},{id:'a3',x:62,y:22},{id:'a4',x:50,y:60}] },
+      { t:1.0,  ball:{x:80,y:28}, atk:[{id:'a1',x:30,y:75},{id:'a2',x:80,y:28},{id:'a3',x:62,y:22},{id:'a4',x:50,y:60}] },
+    ],
+  },
+  {
+    id: 'counter', name: 'Counter break', desc: '5s', duration: 5000,
+    tip: 'Quick break — defense has to recover goalside on the shortest line.',
+    keyframes: [
+      { t:0,    ball:{x:60,y:55}, atk:[{id:'a1',x:35,y:90},{id:'a2',x:65,y:90},{id:'a3',x:60,y:55},{id:'a4',x:50,y:100}] },
+      { t:0.4,  ball:{x:55,y:35}, atk:[{id:'a1',x:42,y:55},{id:'a2',x:60,y:50},{id:'a3',x:55,y:35},{id:'a4',x:50,y:75}] },
+      { t:0.8,  ball:{x:48,y:18}, atk:[{id:'a1',x:38,y:30},{id:'a2',x:58,y:24},{id:'a3',x:48,y:18},{id:'a4',x:50,y:50}] },
+      { t:1.0,  ball:{x:48,y:18}, atk:[{id:'a1',x:38,y:30},{id:'a2',x:58,y:24},{id:'a3',x:48,y:18},{id:'a4',x:50,y:50}] },
+    ],
+  },
+  {
+    id: 'switch', name: 'Diagonal switch', desc: '6s', duration: 6000,
+    tip: 'Big switch from one wing to the other — the slide always takes time.',
+    keyframes: [
+      { t:0,    ball:{x:22,y:65}, atk:[{id:'a1',x:22,y:65},{id:'a2',x:78,y:80},{id:'a3',x:50,y:50},{id:'a4',x:50,y:95}] },
+      { t:0.45, ball:{x:24,y:60}, atk:[{id:'a1',x:24,y:60},{id:'a2',x:78,y:55},{id:'a3',x:50,y:42},{id:'a4',x:50,y:88}] },
+      { t:0.6,  ball:{x:78,y:55}, atk:[{id:'a1',x:30,y:68},{id:'a2',x:78,y:55},{id:'a3',x:50,y:42},{id:'a4',x:50,y:88}] },
+      { t:1.0,  ball:{x:82,y:35}, atk:[{id:'a1',x:30,y:68},{id:'a2',x:82,y:35},{id:'a3',x:55,y:28},{id:'a4',x:50,y:78}] },
+    ],
+  },
+
+  // ── BOX SPECIFIC ──
+  {
+    id: 'box-slide', name: 'Box · block slide', desc: '7s', scheme: 'box', duration: 7000,
+    tip: 'Both lines slide together. Compactness over chasing — never let the box split.',
+    keyframes: [
+      { t:0,    ball:{x:50,y:55}, atk:[{id:'a1',x:35,y:70},{id:'a2',x:65,y:70},{id:'a3',x:50,y:55},{id:'a4',x:50,y:90}] },
+      { t:0.35, ball:{x:22,y:60}, atk:[{id:'a1',x:22,y:60},{id:'a2',x:65,y:70},{id:'a3',x:50,y:50},{id:'a4',x:50,y:90}] },
+      { t:0.7,  ball:{x:78,y:60}, atk:[{id:'a1',x:30,y:72},{id:'a2',x:78,y:60},{id:'a3',x:55,y:48},{id:'a4',x:50,y:90}] },
+      { t:1.0,  ball:{x:78,y:42}, atk:[{id:'a1',x:30,y:72},{id:'a2',x:78,y:42},{id:'a3',x:60,y:38},{id:'a4',x:50,y:80}] },
+    ],
+  },
+  {
+    id: 'box-trigger', name: 'Box · press trigger', desc: '7s', scheme: 'box', duration: 7000,
+    tip: 'The mid steps the moment the ball crosses halfway on their side. Miss it → they turn.',
+    keyframes: [
+      { t:0,    ball:{x:50,y:95}, atk:[{id:'a1',x:35,y:90},{id:'a2',x:65,y:90},{id:'a3',x:50,y:95},{id:'a4',x:50,y:115}] },
+      { t:0.35, ball:{x:35,y:80}, atk:[{id:'a1',x:35,y:80},{id:'a2',x:65,y:90},{id:'a3',x:50,y:75},{id:'a4',x:50,y:110}] },
+      { t:0.7,  ball:{x:30,y:62}, atk:[{id:'a1',x:30,y:62},{id:'a2',x:65,y:80},{id:'a3',x:50,y:65},{id:'a4',x:50,y:100}] },
+      { t:1.0,  ball:{x:28,y:54}, atk:[{id:'a1',x:28,y:54},{id:'a2',x:65,y:75},{id:'a3',x:50,y:60},{id:'a4',x:50,y:95}] },
+    ],
+  },
+  {
+    id: 'box-pinned', name: 'Box · pinned + switched', desc: '8s', scheme: 'box', duration: 8000,
+    tip: 'Pinned deep + a quick switch finds the wide channel — the Box\'s biggest weakness.',
+    keyframes: [
+      { t:0,    ball:{x:50,y:35}, atk:[{id:'a1',x:25,y:42},{id:'a2',x:75,y:42},{id:'a3',x:50,y:35},{id:'a4',x:50,y:20}] },
+      { t:0.3,  ball:{x:22,y:32}, atk:[{id:'a1',x:22,y:32},{id:'a2',x:75,y:42},{id:'a3',x:50,y:28},{id:'a4',x:50,y:18}] },
+      { t:0.5,  ball:{x:22,y:32}, atk:[{id:'a1',x:22,y:32},{id:'a2',x:80,y:38},{id:'a3',x:50,y:25},{id:'a4',x:50,y:18}] },
+      { t:0.72, ball:{x:80,y:38}, atk:[{id:'a1',x:35,y:55},{id:'a2',x:80,y:38},{id:'a3',x:55,y:22},{id:'a4',x:50,y:18}] },
+      { t:1.0,  ball:{x:84,y:18}, atk:[{id:'a1',x:35,y:55},{id:'a2',x:84,y:18},{id:'a3',x:62,y:14},{id:'a4',x:50,y:25}] },
+    ],
+  },
+  {
+    id: 'box-pivot-drops', name: 'Box · pivot in the gap', desc: '6s', scheme: 'box', duration: 6000,
+    tip: 'Their pivot drops between your two banks. Near-side mid MUST drop with them.',
+    keyframes: [
+      { t:0,    ball:{x:50,y:90}, atk:[{id:'a1',x:30,y:80},{id:'a2',x:70,y:80},{id:'a3',x:50,y:90},{id:'a4',x:50,y:42}] },
+      { t:0.3,  ball:{x:50,y:80}, atk:[{id:'a1',x:30,y:80},{id:'a2',x:70,y:80},{id:'a3',x:50,y:80},{id:'a4',x:50,y:50}] },
+      { t:0.6,  ball:{x:50,y:50}, atk:[{id:'a1',x:30,y:75},{id:'a2',x:70,y:75},{id:'a3',x:50,y:65},{id:'a4',x:50,y:50}] },
+      { t:1.0,  ball:{x:50,y:36}, atk:[{id:'a1',x:34,y:55},{id:'a2',x:66,y:55},{id:'a3',x:50,y:52},{id:'a4',x:50,y:36}] },
+    ],
+  },
+];
+
+const lerp = (a, b, u) => a + (b - a) * u;
+function evalScenario(sc, t) {
+  for (let i = 0; i < sc.keyframes.length - 1; i++) {
+    const k0 = sc.keyframes[i], k1 = sc.keyframes[i+1];
+    if (t >= k0.t && t <= k1.t) {
+      const u = (t - k0.t) / Math.max(1e-6, k1.t - k0.t);
+      const e = u < 0.5 ? 2*u*u : 1 - Math.pow(-2*u + 2, 2)/2; // easeInOutQuad
+      const ball = { x: lerp(k0.ball.x, k1.ball.x, e), y: lerp(k0.ball.y, k1.ball.y, e) };
+      const atk = k1.atk.map(p => {
+        const p0 = k0.atk.find(q => q.id === p.id) || p;
+        return { id: p.id, x: lerp(p0.x, p.x, e), y: lerp(p0.y, p.y, e) };
+      });
+      return { ball, atk };
+    }
+  }
+  const last = sc.keyframes[sc.keyframes.length - 1];
+  return { ball: last.ball, atk: last.atk };
+}
+
+// ───────── POV tips ─────────
+const POV_TIPS = {
+  GK: () => 'Stay centered between the ball and your goal. Step out to narrow the angle as the ball gets closer — never get caught flat-footed.',
+  D:  (ball) => ball.y < 45
+    ? 'Ball is in your zone. Get goalside, force them wide, stay on your feet — do not dive in.'
+    : 'Hold a deeper line. Track the highest attacker and talk to your mid above you.',
+  M:  (ball, p) => Math.sign(ball.x - 50) === Math.sign(p.x - 50)
+    ? 'Your side. Step to the carrier and cut the inside lane. Do not let them turn.'
+    : 'Far side. Tuck toward the centre — cover the second runner and shield your defender.',
+  F:  (ball) => ball.y > 70
+    ? 'They are still building. Curve your run to cut the pass into the centre — funnel them wide.'
+    : 'Drop in. Screen the pivot and give your back-line vision. Press only with a trigger.',
+};
+const POV_HEAD = { GK:'Goalkeeper', D:'Defender', M:'Midfielder', F:'Forward' };
+
+// ───────── pitch + svg ─────────
+function clientToPitch(svg, clientX, clientY) {
+  const pt = svg.createSVGPoint();
+  pt.x = clientX; pt.y = clientY;
+  const ctm = svg.getScreenCTM();
+  if (!ctm) return { x: 0, y: 0 };
+  const local = pt.matrixTransform(ctm.inverse());
+  return { x: local.x, y: local.y };
+}
+
+function PitchMarkings() {
+  return (
+    <g>
+      <defs>
+        <pattern id="turfStripes" patternUnits="userSpaceOnUse" width="100" height="14">
+          <rect width="100" height="14" fill="var(--turf-1)"/>
+          <rect width="100" height="7"  fill="var(--turf-2)"/>
+        </pattern>
+        <radialGradient id="turfVignette" cx="50%" cy="50%" r="65%">
+          <stop offset="0%" stopColor="rgba(0,0,0,0)"/>
+          <stop offset="100%" stopColor="rgba(0,0,0,.35)"/>
+        </radialGradient>
+        <marker id="arrowHead" viewBox="0 0 10 10" refX="8" refY="5"
+                markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 Z" fill="#9ce0a8"/>
+        </marker>
+      </defs>
+      <rect x="0" y="0" width="100" height="140" fill="url(#turfStripes)"/>
+      <rect x="0" y="0" width="100" height="140" fill="url(#turfVignette)"/>
+
+      <rect x="2" y="2" width="96" height="136" fill="none"
+            stroke="var(--turf-line)" strokeWidth="0.6" rx="1.2"/>
+      <line x1="2" y1="70" x2="98" y2="70" stroke="var(--turf-line)" strokeWidth="0.5"/>
+      <circle cx="50" cy="70" r="12" fill="none" stroke="var(--turf-line)" strokeWidth="0.5"/>
+      <circle cx="50" cy="70" r="0.8" fill="var(--turf-line)"/>
+
+      <rect x="22" y="2" width="56" height="20" fill="none"
+            stroke="var(--turf-line)" strokeWidth="0.5"/>
+      <rect x="34" y="2" width="32" height="9" fill="none"
+            stroke="var(--turf-line)" strokeWidth="0.5"/>
+      <circle cx="50" cy="16" r="0.8" fill="var(--turf-line)"/>
+      <path d="M 40,22 A 10,10 0 0 0 60,22" fill="none"
+            stroke="var(--turf-line)" strokeWidth="0.5"/>
+      <rect x="38" y="0" width="24" height="2" fill="none"
+            stroke="var(--turf-line)" strokeWidth="0.6"/>
+      <line x1="38" y1="0" x2="38" y2="2" stroke="var(--turf-line)" strokeWidth="0.6"/>
+      <line x1="62" y1="0" x2="62" y2="2" stroke="var(--turf-line)" strokeWidth="0.6"/>
+
+      <rect x="22" y="118" width="56" height="20" fill="none"
+            stroke="var(--turf-line)" strokeWidth="0.5"/>
+      <rect x="34" y="129" width="32" height="9" fill="none"
+            stroke="var(--turf-line)" strokeWidth="0.5"/>
+      <circle cx="50" cy="124" r="0.8" fill="var(--turf-line)"/>
+      <path d="M 40,118 A 10,10 0 0 1 60,118" fill="none"
+            stroke="var(--turf-line)" strokeWidth="0.5"/>
+      <rect x="38" y="138" width="24" height="2" fill="none"
+            stroke="var(--turf-line)" strokeWidth="0.6"/>
+      <line x1="38" y1="138" x2="38" y2="140" stroke="var(--turf-line)" strokeWidth="0.6"/>
+      <line x1="62" y1="138" x2="62" y2="140" stroke="var(--turf-line)" strokeWidth="0.6"/>
+    </g>
+  );
+}
+
+function Player({ p, dragging, onPointerDown, showLabels, isPov, povActive }) {
+  const role = ROLES[p.role];
+  const r = p.role === 'GK' ? 4.4 : 4.2;
+  return (
+    <g className={`player ${dragging?'dragging':''} ${povActive && !isPov ? 'faded' : ''}`}
+       transform={`translate(${p.x},${p.y})`}
+       onPointerDown={onPointerDown}
+       style={{ transition: dragging ? 'none' : 'transform .55s cubic-bezier(.4,.1,.2,1)' }}>
+      {isPov && <circle className="you-pulse" r="9.5"/>}
+      {isPov && <circle className="you-ring" r={r + 1.6}/>}
+      <circle className="player-circle" r={r} fill={role.color}/>
+      <text className="player-num" y={showLabels ? -0.3 : 0.2}>{p.num}</text>
+      {showLabels && (
+        <text className="player-role" y={r + 3.6}>{role.label}</text>
+      )}
+    </g>
+  );
+}
+
+function Attacker({ a, dragging, onPointerDown, showLabels }) {
+  return (
+    <g className={`player ${dragging?'dragging':''}`}
+       transform={`translate(${a.x},${a.y})`}
+       onPointerDown={onPointerDown}
+       style={{ transition: dragging ? 'none' : 'transform .35s ease-out' }}>
+      <circle className="player-circle" r={4.0} fill="var(--att)"/>
+      <text className="player-num" y={showLabels ? -0.3 : 0.2}>{a.num}</text>
+      {showLabels && (
+        <text className="player-role" y={4 + 3.6}>ATT</text>
+      )}
+    </g>
+  );
+}
+
+function Ball({ b, dragging, onPointerDown }) {
+  return (
+    <g className={`player ${dragging?'dragging':''}`}
+       transform={`translate(${b.x},${b.y})`}
+       onPointerDown={onPointerDown}
+       style={{ transition: dragging ? 'none' : 'transform .25s ease-out' }}>
+      <ellipse className="ball-shadow" cx="0" cy="3" rx="2.6" ry="0.9"/>
+      <circle className="ball-circle" r="2.4"/>
+      <path d="M -1.4,-0.6 L 0,-1.6 L 1.4,-0.6 L 0.9,1 L -0.9,1 Z"
+            fill="rgba(0,0,0,.55)" stroke="none"/>
+    </g>
+  );
+}
+
+function Lanes({ ball, attackers, defenders, showLanes }) {
+  if (!showLanes) return null;
+  const goal = { x: 50, y: 2 };
+  const lanes = attackers.map(a => {
+    const dx = a.x - ball.x, dy = a.y - ball.y;
+    const d = Math.hypot(dx, dy);
+    if (d < 4 || d > 60) return null;
+    let blocked = false;
+    for (const D of defenders) {
+      if (D.role === 'GK') continue;
+      const t = ((D.x - ball.x) * dx + (D.y - ball.y) * dy) / (d * d);
+      if (t < 0.05 || t > 0.95) continue;
+      const px = ball.x + t * dx, py = ball.y + t * dy;
+      const dist = Math.hypot(D.x - px, D.y - py);
+      if (dist < 5) { blocked = true; break; }
+    }
+    return { a, blocked };
+  }).filter(Boolean);
+
+  const sg = { x: goal.x - ball.x, y: goal.y - ball.y };
+  const sd = Math.hypot(sg.x, sg.y);
+  let shotBlocked = false;
+  for (const D of defenders) {
+    const t = ((D.x - ball.x) * sg.x + (D.y - ball.y) * sg.y) / (sd * sd);
+    if (t < 0.05 || t > 0.98) continue;
+    const px = ball.x + t * sg.x, py = ball.y + t * sg.y;
+    const dist = Math.hypot(D.x - px, D.y - py);
+    if (dist < 5) { shotBlocked = true; break; }
+  }
+  const inRange = sd < 65;
+
+  return (
+    <g pointerEvents="none">
+      {lanes.map(({ a, blocked }) => (
+        <line key={a.id} className="lane"
+              x1={ball.x} y1={ball.y} x2={a.x} y2={a.y}
+              opacity={blocked ? 0.18 : 0.7}
+              strokeDasharray={blocked ? '2 4' : '5 4'}/>
+      ))}
+      {inRange && (
+        <line className="shoot-lane"
+              x1={ball.x} y1={ball.y} x2={goal.x} y2={goal.y + 1}
+              opacity={shotBlocked ? 0.2 : 0.85}
+              strokeDasharray={shotBlocked ? '2 5' : '0'}/>
+      )}
+    </g>
+  );
+}
+
+function RotationArrows({ base, current, show }) {
+  if (!show) return null;
+  return (
+    <g pointerEvents="none">
+      {base.map(b => {
+        const c = current.find(x => x.id === b.id);
+        if (!c) return null;
+        const dx = c.x - b.x, dy = c.y - b.y;
+        const len = Math.hypot(dx, dy);
+        if (len < 2.2) return null;
+        const ux = dx / len, uy = dy / len;
+        const x1 = b.x + ux * 4.5, y1 = b.y + uy * 4.5;
+        const x2 = c.x - ux * 5.0, y2 = c.y - uy * 5.0;
+        return (
+          <g key={b.id}>
+            <circle cx={b.x} cy={b.y} r="3.4" fill="none"
+                    stroke="rgba(255,255,255,.35)" strokeWidth="0.5"
+                    strokeDasharray="1.2 1.2"/>
+            <line x1={x1} y1={y1} x2={x2} y2={y2}
+                  className="arrow" markerEnd="url(#arrowHead)"/>
+          </g>
+        );
+      })}
+    </g>
+  );
+}
+
+function PressZone({ zone, active, show }) {
+  if (!show) return null;
+  return (
+    <g pointerEvents="none">
+      <rect className={active ? 'press-glow' : 'zone'}
+            x={zone.x} y={zone.y} width={zone.w} height={zone.h} rx="2"/>
+      <text x={zone.x + zone.w/2} y={zone.y + 2.6}
+            textAnchor="middle"
+            style={{
+              font: "600 2px 'JetBrains Mono', monospace",
+              letterSpacing: '.08em',
+              fill: active ? '#ffd6c8' : 'rgba(255,235,180,.7)'
+            }}>
+        {active ? '◉ PRESS TRIGGER' : 'press zone'}
+      </text>
+    </g>
+  );
+}
+
+function GhostPlayer({ pos, dragging, onPointerDown }) {
+  return (
+    <g className={`ghost-q ${dragging?'dragging':''}`}
+       transform={`translate(${pos.x},${pos.y})`}
+       onPointerDown={onPointerDown}
+       style={{ transition: dragging ? 'none' : 'transform .2s ease-out' }}>
+      <circle className="ghost-q-fill" r="4.6"/>
+      <circle className="ghost-q-stroke" r="4.6"/>
+      <text className="ghost-q-text" y="0.2">?</text>
+    </g>
+  );
+}
+
+function CorrectOverlay({ from, to }) {
+  return (
+    <g pointerEvents="none">
+      <line className="correct-overlay-line"
+            x1={from.x} y1={from.y} x2={to.x} y2={to.y}/>
+      <circle className="correct-overlay" cx={to.x} cy={to.y} r="4.6"/>
+      <text className="correct-overlay-text" x={to.x} y={to.y + 8}>HERE</text>
+    </g>
+  );
+}
+
+function Pitch({
+  scheme, defenders, attackers, ball, base, pressActive,
+  showLanes, showZones, showRotation, showLabels,
+  showHeat, showCoverage, povId,
+  drillMode, ghostPos, correctPos, onDragGhost,
+  onDragPlayer, onDragAttacker, onDragBall,
+}) {
+  const svgRef = useRef(null);
+  const [drag, setDrag] = useState(null);
+
+  const onMove = useCallback((e) => {
+    if (!drag || !svgRef.current) return;
+    const { x, y } = clientToPitch(svgRef.current, e.clientX, e.clientY);
+    if (drag.type === 'def') onDragPlayer(drag.id, x, y);
+    else if (drag.type === 'att') onDragAttacker(drag.id, x, y);
+    else if (drag.type === 'ball') onDragBall(x, y);
+    else if (drag.type === 'ghost') onDragGhost(x, y);
+  }, [drag, onDragPlayer, onDragAttacker, onDragBall, onDragGhost]);
+
+  const onUp = useCallback(() => setDrag(null), []);
+
+  useEffect(() => {
+    if (!drag) return;
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+    };
+  }, [drag, onMove, onUp]);
+
+  return (
+    <svg ref={svgRef} className="pitch" viewBox="0 0 100 140"
+         preserveAspectRatio="xMidYMid meet">
+      <PitchMarkings/>
+
+      {!drillMode && <Coverage defenders={defenders} show={showCoverage}/>}
+      {!drillMode && <Heatmap defenders={defenders} show={showHeat}/>}
+
+      {!drillMode && scheme.pressZone && (
+        <PressZone zone={scheme.pressZone} active={pressActive} show={showZones}/>
+      )}
+
+      {!drillMode && <RotationArrows base={base} current={defenders} show={showRotation}/>}
+
+      {!drillMode && showRotation && base.map(b => (
+        <circle key={'g'+b.id} cx={b.x} cy={b.y} r="3.6"
+                fill="none" stroke="rgba(255,255,255,.25)"
+                strokeWidth="0.4" strokeDasharray="1 1.5"/>
+      ))}
+
+      {!drillMode && (
+        <Lanes ball={ball} attackers={attackers} defenders={defenders} showLanes={showLanes}/>
+      )}
+
+      {attackers.map(a => (
+        <Attacker key={a.id} a={a} showLabels={showLabels}
+                  dragging={!drillMode && drag?.type==='att' && drag.id===a.id}
+                  onPointerDown={drillMode ? (e)=>e.stopPropagation()
+                    : (e)=>{ e.stopPropagation(); setDrag({type:'att',id:a.id}); }}/>
+      ))}
+
+      {defenders.map(p => (
+        <Player key={p.id} p={p} showLabels={showLabels}
+                isPov={!drillMode && povId === p.id} povActive={!drillMode && !!povId}
+                dragging={!drillMode && drag?.type==='def' && drag.id===p.id}
+                onPointerDown={drillMode ? (e)=>e.stopPropagation()
+                  : (e)=>{ e.stopPropagation(); setDrag({type:'def',id:p.id}); }}/>
+      ))}
+
+      {drillMode && correctPos && ghostPos && (
+        <CorrectOverlay from={ghostPos} to={correctPos}/>
+      )}
+
+      {drillMode && ghostPos && (
+        <GhostPlayer pos={ghostPos}
+                     dragging={drag?.type==='ghost'}
+                     onPointerDown={(e)=>{ e.stopPropagation(); setDrag({type:'ghost'}); }}/>
+      )}
+
+      <Ball b={ball}
+            dragging={!drillMode && drag?.type==='ball'}
+            onPointerDown={drillMode ? (e)=>e.stopPropagation()
+              : (e)=>{ e.stopPropagation(); setDrag({type:'ball'}); }}/>
+    </svg>
+  );
+}
+
+// ───────── app ─────────
+function SchemeIcon({ scheme }) {
+  return (
+    <svg viewBox="0 0 100 140" width={34} height={24}>
+      <rect x="2" y="2" width="96" height="136" rx="6"
+            fill="rgba(58,138,74,.55)" stroke="rgba(255,255,255,.4)" strokeWidth="0.8"/>
+      <line x1="2" y1="70" x2="98" y2="70" stroke="rgba(255,255,255,.4)" strokeWidth="0.6"/>
+      {scheme.base.map(p => (
+        <circle key={p.id} cx={p.x} cy={p.y}
+                r={p.role==='GK'?5:4.6}
+                fill={ROLES[p.role].color}
+                stroke="rgba(255,255,255,.85)" strokeWidth="0.8"/>
+      ))}
+    </svg>
+  );
+}
+
+function Legend() {
+  return (
+    <div className="legend">
+      <h3>Legend</h3>
+      <div className="legend-row">
+        <span className="dot" style={{background:'var(--gk)'}}/>Goalkeeper
+      </div>
+      <div className="legend-row">
+        <span className="dot" style={{background:'var(--def)'}}/>Defender / Mid (your team)
+      </div>
+      <div className="legend-row">
+        <span className="dot" style={{background:'var(--att)'}}/>Attacker (opponent)
+      </div>
+      <div className="legend-row">
+        <span className="dot" style={{background:'var(--ball)',border:'2px solid #fff'}}/>Ball — drag to shift defense
+      </div>
+      <div className="legend-row">
+        <span className="line"/>Passing lanes
+      </div>
+      <div className="legend-row">
+        <svg width="18" height="10" viewBox="0 0 18 10">
+          <line x1="1" y1="5" x2="14" y2="5" stroke="#9ce0a8" strokeWidth="1.6"/>
+          <path d="M14,2 L17,5 L14,8 Z" fill="#9ce0a8"/>
+        </svg>
+        Rotations from base
+      </div>
+    </div>
+  );
+}
+
+function DrillPanel({
+  drill, submission, streak, total, deckTotal, progress,
+  drillFilter, onChangeFilter,
+  onSubmit, onNext, onSkip, onResetProgress, onExitDrill,
+}) {
+  // Mastered count is over the current deck (filtered).
+  const filterLabel = drillFilter === 'all'
+    ? 'All schemes'
+    : (SCHEMES.find(s => s.id === drillFilter)?.name || drillFilter);
+  const masteredInDeck = DRILLS.reduce((n, d) => {
+    if (drillFilter !== 'all' && d.scheme !== drillFilter) return n;
+    return n + (progress[d.id]?.bestResult === 'on' ? 1 : 0);
+  }, 0);
+  return (
+    <div className="drill-panel">
+      <div className="drill-streak">
+        <span>Streak <b>{streak}</b></span>
+        <span>{masteredInDeck}/{total} mastered</span>
+      </div>
+
+      <div>
+        <label className="meta" style={{display:'block',marginBottom:6}}>Focus on scheme</label>
+        <select className="pov-select"
+                value={drillFilter}
+                onChange={e => onChangeFilter(e.target.value)}>
+          <option value="all">All schemes ({deckTotal})</option>
+          {SCHEMES.map(s => {
+            const n = DRILLS.filter(d => d.scheme === s.id).length;
+            return n > 0 ? (
+              <option key={s.id} value={s.id}>{s.name} ({n})</option>
+            ) : null;
+          })}
+        </select>
+      </div>
+
+      <div>
+        <span className="drill-tag">{drill.role.toUpperCase()}</span>
+        <span className="drill-tag">{drill.concept}</span>
+      </div>
+
+      <p className="drill-prompt">{drill.prompt}</p>
+
+      {submission ? (
+        <>
+          <div className={`verdict ${submission.verdict}`}>
+            <div className="vh">
+              <span>
+                {submission.verdict === 'on' && '◉ On it'}
+                {submission.verdict === 'almost' && '◐ Almost'}
+                {submission.verdict === 'off' && '○ Off'}
+              </span>
+              <span>{submission.d.toFixed(1)} units off</span>
+            </div>
+            <div className="vw">{drill.why}</div>
+          </div>
+          <div className="drill-actions">
+            <button className="drill-btn primary" onClick={onNext}>Next →</button>
+          </div>
+        </>
+      ) : (
+        <>
+          <p style={{margin:0,fontSize:12.5,color:'rgba(243,239,230,.55)',fontStyle:'italic'}}>
+            Drag the yellow "?" on the pitch to where you think you should stand, then submit.
+          </p>
+          <div className="drill-actions">
+            <button className="drill-btn primary" onClick={onSubmit}>Submit</button>
+            <button className="drill-btn" onClick={onSkip}>Skip</button>
+          </div>
+        </>
+      )}
+
+      <div style={{display:'flex',gap:8,marginTop:'auto',paddingTop:14,
+                   borderTop:'1px solid #232821'}}>
+        <button className="drill-btn" onClick={onExitDrill}>Exit drill</button>
+        <button className="drill-btn" onClick={onResetProgress}>Reset progress</button>
+      </div>
+
+      <div style={{font:"500 10px 'JetBrains Mono',monospace",
+                   color:'rgba(243,239,230,.4)',letterSpacing:'.1em',
+                   textTransform:'uppercase',textAlign:'center'}}>
+        {filterLabel} · drill mode
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const [showLanes, setShowLanes] = useState(true);
+  const [showZones, setShowZones] = useState(true);
+  const [showRotation, setShowRotation] = useState(true);
+  const [showLabels, setShowLabels] = useState(true);
+  const [showHeat, setShowHeat] = useState(false);
+  const [showCoverage, setShowCoverage] = useState(false);
+  const [povId, setPovId] = useState('');
+  const [scenarioId, setScenarioId] = useState(null);
+
+  const [drillMode, setDrillMode] = useState(false);
+  const [drillIdx, setDrillIdx] = useState(0);
+  const [drillDeck, setDrillDeck] = useState(() => DRILLS.map((_, i) => i));
+  const [drillFilter, setDrillFilter] = useState('all'); // 'all' | scheme.id
+  const [ghostPos, setGhostPos] = useState(null);
+  const [submission, setSubmission] = useState(null);
+  const [streak, setStreak] = useState(0);
+  const [progress, setProgress] = useState(() => loadProgress());
+
+  const buildDeck = (filter) => {
+    const idx = DRILLS
+      .map((d, i) => (filter === 'all' || d.scheme === filter) ? i : -1)
+      .filter(i => i >= 0);
+    // Fisher-Yates shuffle (stable, no mutation surprises)
+    const a = [...idx];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  };
+
+  const activeDrill = drillMode && drillDeck.length
+    ? DRILLS[drillDeck[drillIdx % drillDeck.length]]
+    : null;
+
+  const [schemeId, setSchemeId] = useState('diamond');
+  const effectiveSchemeId = activeDrill ? activeDrill.scheme : schemeId;
+  const scheme = useMemo(
+    () => SCHEMES.find(s => s.id === effectiveSchemeId) || SCHEMES[0],
+    [effectiveSchemeId]
+  );
+
+  const [ball, setBall] = useState({ ...BALL_DEFAULT });
+  const [attackers, setAttackers] = useState(ATTACKERS_DEFAULT.map(a=>({...a})));
+  const [manual, setManual] = useState({});
+
+  const effectiveBall = activeDrill ? activeDrill.ball : ball;
+  const effectiveAttackers = activeDrill ? activeDrill.attackers : attackers;
+
+  useEffect(() => { setManual({}); }, [schemeId]);
+
+  // Reset POV pick if it doesn't exist in the new scheme
+  useEffect(() => {
+    if (povId && !scheme.base.find(p => p.id === povId)) setPovId('');
+  }, [scheme, povId]);
+
+  // Scenario animation
+  useEffect(() => {
+    if (!scenarioId) return;
+    const sc = SCENARIOS.find(s => s.id === scenarioId);
+    if (!sc) return;
+    const start = performance.now();
+    let raf;
+    const tick = (now) => {
+      const t = Math.min(1, (now - start) / sc.duration);
+      const { ball: b, atk } = evalScenario(sc, t);
+      setBall(b);
+      setAttackers(prev => prev.map(p => {
+        const u = atk.find(q => q.id === p.id);
+        return u ? { ...p, x: u.x, y: u.y } : p;
+      }));
+      if (t < 1) raf = requestAnimationFrame(tick);
+      else setScenarioId(null);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [scenarioId]);
+
+  const defenders = useMemo(() => {
+    let pos;
+    if (scheme.manMark) {
+      const atks = effectiveAttackers;
+      pos = scheme.base.map((p, i) => {
+        if (p.role === 'GK') {
+          const sx = (effectiveBall.x - 50) / 50;
+          return { ...p, x: clamp(50 + sx * 8, 38, 62), y: 8 };
+        }
+        const a = atks[i - 1] || atks[0];
+        const dx = 50 - a.x, dy = 4 - a.y;
+        const d = Math.hypot(dx, dy) || 1;
+        const offset = 7;
+        return {
+          ...p,
+          x: clamp(a.x + (dx/d) * offset, 8, 92),
+          y: clamp(a.y + (dy/d) * offset, 12, 95),
+        };
+      });
+    } else {
+      pos = scheme.shift(effectiveBall.x, effectiveBall.y);
+    }
+    pos = pos.map(p => activeDrill ? p : (manual[p.id] ? { ...p, ...manual[p.id] } : p));
+    if (activeDrill) pos = pos.filter(p => p.id !== activeDrill.hideId);
+    return pos;
+  }, [scheme, effectiveBall, effectiveAttackers, manual, activeDrill]);
+
+  const pressActive = useMemo(() => {
+    if (!scheme.pressZone) return false;
+    const z = scheme.pressZone;
+    return effectiveBall.x >= z.x && effectiveBall.x <= z.x + z.w
+        && effectiveBall.y >= z.y && effectiveBall.y <= z.y + z.h;
+  }, [scheme, effectiveBall]);
+
+  const onDragPlayer = (id, x, y) => {
+    setManual(m => ({ ...m, [id]: { x: clamp(x, 4, 96), y: clamp(y, 4, 136) } }));
+  };
+  const onDragAttacker = (id, x, y) => {
+    setAttackers(a => a.map(p => p.id === id
+      ? { ...p, x: clamp(x, 4, 96), y: clamp(y, 4, 136) } : p));
+  };
+  const onDragBall = (x, y) => {
+    setBall({ x: clamp(x, 4, 96), y: clamp(y, 4, 136) });
+  };
+
+  const reset = () => {
+    setBall({ ...BALL_DEFAULT });
+    setAttackers(ATTACKERS_DEFAULT.map(a=>({...a})));
+    setManual({});
+  };
+
+  // ── Drill effects + handlers ──
+  useEffect(() => {
+    if (activeDrill) {
+      setGhostPos({ ...activeDrill.ghostStart });
+      setSubmission(null);
+    } else {
+      setGhostPos(null);
+      setSubmission(null);
+    }
+  }, [drillMode, drillIdx, activeDrill?.id]);
+
+  const onDragGhost = (x, y) => {
+    if (submission) return;
+    setGhostPos({ x: clamp(x, 4, 96), y: clamp(y, 4, 136) });
+  };
+  const onSubmitDrill = () => {
+    if (!activeDrill || !ghostPos || submission) return;
+    const d = Math.hypot(ghostPos.x - activeDrill.correct.x, ghostPos.y - activeDrill.correct.y);
+    const verdict = d < 5 ? 'on' : d < 10 ? 'almost' : 'off';
+    setSubmission({ d, verdict });
+    setStreak(verdict === 'on' ? streak + 1 : 0);
+    const next = recordResult(progress, activeDrill.id, verdict);
+    setProgress(next);
+    saveProgress(next);
+  };
+  const onNextDrill = () => setDrillIdx(i => (i + 1) % drillDeck.length);
+  const onSkipDrill = () => { setStreak(0); setDrillIdx(i => (i + 1) % drillDeck.length); };
+  const onResetProgress = () => {
+    setProgress({}); saveProgress({}); setStreak(0);
+  };
+  const onEnterDrill = () => {
+    setDrillDeck(buildDeck(drillFilter));
+    setDrillIdx(0);
+    setStreak(0);
+    setDrillMode(true);
+  };
+  const onExitDrill = () => setDrillMode(false);
+  const onChangeFilter = (filter) => {
+    setDrillFilter(filter);
+    setDrillDeck(buildDeck(filter));
+    setDrillIdx(0);
+    setStreak(0);
+    setSubmission(null);
+  };
+
+  const onPlayScenario = (id) => {
+    if (id === scenarioId) { setScenarioId(null); return; }
+    const sc = SCENARIOS.find(s => s.id === id);
+    if (sc?.scheme && sc.scheme !== schemeId) setSchemeId(sc.scheme);
+    setScenarioId(id);
+  };
+
+  return (
+    <div className="app">
+      <aside className="sidebar">
+        <div className="brand">
+          <span className="dot"/>
+          <b>5-A-SIDE</b>
+          <span>tactics board</span>
+        </div>
+        <h1>Defensive <em>schemes</em></h1>
+        <p className="lede">
+          Drag the ball to see how each defensive shape pivots.
+          Drag any player to override. Switch schemes to compare.
+        </p>
+
+        <div className="section-h">Schemes</div>
+        <div className="schemes">
+          {SCHEMES.map(s => (
+            <button key={s.id} className="scheme"
+                    aria-pressed={s.id === effectiveSchemeId}
+                    disabled={drillMode}
+                    style={drillMode ? { opacity:.4, cursor:'not-allowed' } : null}
+                    onClick={() => !drillMode && setSchemeId(s.id)}>
+              <SchemeIcon scheme={s}/>
+              <div>
+                <div className="nm">{s.name}</div>
+                <div className="sub">{s.shorthand}</div>
+              </div>
+            </button>
+          ))}
+        </div>
+
+        <div className="section-h">Practice</div>
+        <button className="drill-toggle"
+                aria-pressed={drillMode}
+                onClick={() => drillMode ? onExitDrill() : onEnterDrill()}>
+          {drillMode ? '↩ Exit drill mode' : '◉ Enter drill mode'}
+        </button>
+
+        <div className="section-h">Scenarios</div>
+        <div className="scenarios">
+          {SCENARIOS.map(s => {
+            const tag = s.scheme ? SCHEMES.find(x => x.id === s.scheme)?.shorthand : null;
+            return (
+              <button key={s.id} className="scenario-btn"
+                      aria-pressed={s.id === scenarioId}
+                      disabled={drillMode}
+                      style={drillMode ? { opacity:.4, cursor:'not-allowed' } : null}
+                      onClick={() => !drillMode && onPlayScenario(s.id)}>
+                <span>▶</span>
+                <span className="nm">{s.name}</span>
+                <span className="desc">{s.id === scenarioId ? 'playing' : (tag || s.desc)}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="footer">5v5 · gk + 4 outfield</div>
+      </aside>
+
+      <div className="stage">
+        <div className="pitch-wrap">
+          <Pitch
+            scheme={scheme}
+            defenders={defenders}
+            attackers={effectiveAttackers}
+            ball={effectiveBall}
+            base={scheme.base}
+            pressActive={pressActive}
+            showLanes={showLanes}
+            showZones={showZones}
+            showRotation={showRotation && !scheme.manMark}
+            showLabels={showLabels}
+            showHeat={showHeat}
+            showCoverage={showCoverage}
+            povId={povId}
+            drillMode={drillMode}
+            ghostPos={ghostPos}
+            correctPos={submission && activeDrill ? activeDrill.correct : null}
+            onDragGhost={onDragGhost}
+            onDragPlayer={onDragPlayer}
+            onDragAttacker={onDragAttacker}
+            onDragBall={onDragBall}
+          />
+          {!drillMode && (
+            <div className="stage-hud">
+              <div className="row"><span className="swatch" style={{background:'var(--ball)'}}/>Ball @ {ball.x.toFixed(0)},{(140-ball.y).toFixed(0)}</div>
+              <div className="row" style={{color: pressActive ? '#ff8a6a' : 'rgba(243,239,230,.45)'}}>
+                <span className="swatch" style={{background: pressActive ? 'var(--press)' : 'rgba(255,255,255,.2)'}}/>
+                {pressActive ? 'PRESS ON' : 'press idle'}
+              </div>
+            </div>
+          )}
+          {drillMode && activeDrill && (
+            <div className="stage-hud">
+              <div className="row"><span className="swatch" style={{background:'#ffea7a'}}/>DRILL · {activeDrill.role.toUpperCase()}</div>
+              <div className="row" style={{color:'rgba(243,239,230,.55)'}}>
+                <span className="swatch" style={{background:'rgba(255,255,255,.2)'}}/>
+                {drillIdx + 1} / {drillDeck.length}
+              </div>
+            </div>
+          )}
+          {(() => {
+            const playing = scenarioId ? SCENARIOS.find(s => s.id === scenarioId) : null;
+            return playing && playing.tip ? (
+              <div style={{
+                position:'absolute',left:'50%',bottom:14,
+                transform:'translateX(-50%)',
+                textTransform:'none',letterSpacing:'.02em',
+                font:"500 12px 'Inter',sans-serif",lineHeight:1.45,
+                color:'#ffd6b8',
+                background:'rgba(18,24,18,.78)',padding:'8px 14px',
+                borderRadius:8,backdropFilter:'blur(8px)',
+                maxWidth:'72%',pointerEvents:'none',
+                border:'1px solid rgba(255,214,184,.2)',
+                boxShadow:'0 8px 24px -10px rgba(0,0,0,.55)'
+              }}>
+                ▶ {playing.tip}
+              </div>
+            ) : (
+              <div className="stage-foot">
+                <span>↑ defending goal</span>
+                <span>{scheme.shorthand}</span>
+                <span>attacking goal ↓</span>
+              </div>
+            );
+          })()}
+        </div>
+      </div>
+
+      <aside className="panel">
+      {drillMode && activeDrill ? (
+        <DrillPanel
+          drill={activeDrill}
+          submission={submission}
+          streak={streak}
+          total={drillDeck.length}
+          deckTotal={DRILLS.length}
+          progress={progress}
+          drillFilter={drillFilter}
+          onChangeFilter={onChangeFilter}
+          onSubmit={onSubmitDrill}
+          onNext={onNextDrill}
+          onSkip={onSkipDrill}
+          onResetProgress={onResetProgress}
+          onExitDrill={onExitDrill}
+        />
+      ) : (<>
+        <div className="meta">{scheme.shorthand}</div>
+        <h2>{scheme.name}</h2>
+        <p style={{fontStyle:'italic',color:'rgba(243,239,230,.65)'}}>{scheme.tagline}</p>
+        <p>{scheme.description}</p>
+
+        <div className="pillars">
+          <div className="pillar pro">
+            <h4>Strengths</h4>
+            <ul>{scheme.pros.map((x,i)=><li key={i}>{x}</li>)}</ul>
+          </div>
+          <div className="pillar con">
+            <h4>Weaknesses</h4>
+            <ul>{scheme.cons.map((x,i)=><li key={i}>{x}</li>)}</ul>
+          </div>
+        </div>
+
+        <div style={{borderTop:'1px solid #232821',paddingTop:14}}>
+          <div className="meta" style={{marginBottom:6}}>Press triggers</div>
+          <p style={{fontSize:12.5}}>{scheme.triggers}</p>
+        </div>
+
+        <div style={{borderTop:'1px solid #232821',paddingTop:14,
+                     display:'flex',flexDirection:'column',gap:10}}>
+          <div className="meta">You are this player</div>
+          <select className="pov-select" value={povId}
+                  onChange={(e)=>setPovId(e.target.value)}>
+            <option value="">— pick your role —</option>
+            {scheme.base.map(p => (
+              <option key={p.id} value={p.id}>
+                #{p.num} · {ROLES[p.role].label} ({POV_HEAD[p.role]})
+              </option>
+            ))}
+          </select>
+          {povId && (() => {
+            const me = defenders.find(d => d.id === povId)
+                    || scheme.base.find(p => p.id === povId);
+            if (!me) return null;
+            return (
+              <div className="pov-card">
+                <div className="pov-label">You · #{me.num} {POV_HEAD[me.role]}</div>
+                <div className="pov-tip">{POV_TIPS[me.role](ball, me)}</div>
+              </div>
+            );
+          })()}
+        </div>
+
+        <Legend/>
+
+        <div className="controls">
+          <div className="ctrl-row">
+            <span className="lbl">Danger heatmap</span>
+            <div className="switch" role="switch" aria-checked={showHeat}
+                 onClick={()=>setShowHeat(v=>!v)}/>
+          </div>
+          <div className="ctrl-row">
+            <span className="lbl">Coverage zones</span>
+            <div className="switch" role="switch" aria-checked={showCoverage}
+                 onClick={()=>setShowCoverage(v=>!v)}/>
+          </div>
+          <div className="ctrl-row">
+            <span className="lbl">Passing & shooting lanes</span>
+            <div className="switch" role="switch" aria-checked={showLanes}
+                 onClick={()=>setShowLanes(v=>!v)}/>
+          </div>
+          <div className="ctrl-row">
+            <span className="lbl">Press zone</span>
+            <div className="switch" role="switch" aria-checked={showZones}
+                 onClick={()=>setShowZones(v=>!v)}/>
+          </div>
+          <div className="ctrl-row">
+            <span className="lbl">Rotation arrows</span>
+            <div className="switch" role="switch" aria-checked={showRotation}
+                 onClick={()=>setShowRotation(v=>!v)}/>
+          </div>
+          <div className="ctrl-row">
+            <span className="lbl">Role labels</span>
+            <div className="switch" role="switch" aria-checked={showLabels}
+                 onClick={()=>setShowLabels(v=>!v)}/>
+          </div>
+          <button className="reset" onClick={reset}>↺ Reset positions</button>
+        </div>
+      </>)}
+      </aside>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
