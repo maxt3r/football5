@@ -756,7 +756,7 @@
           "7": { x: 170, y: 255 },
           "9": { x: 455, y: 308 },
           "10": { x: 800, y: 266 },
-          "11": { x: 162, y: 205 }
+          "11": { x: 320, y: 228 }
         },
         roles: [
           "The presser approaches curved, showing red outside.",
@@ -801,7 +801,7 @@
           "7": { x: 830, y: 255 },
           "9": { x: 545, y: 308 },
           "10": { x: 200, y: 266 },
-          "11": { x: 838, y: 205 }
+          "11": { x: 680, y: 228 }
         },
         roles: [
           "The presser bends the run to stop the inside carry.",
@@ -846,7 +846,7 @@
           "7": { x: 165, y: 250 },
           "9": { x: 455, y: 308 },
           "10": { x: 808, y: 250 },
-          "11": { x: 160, y: 205 }
+          "11": { x: 318, y: 224 }
         },
         roles: [
           "Blue accepts some far-side space to deny the immediate central pass.",
@@ -968,9 +968,7 @@
         copy: "If red tries to slip a pass behind the defensive line, #3 and #5 recover toward goal while #1 steps out to meet the ball. The line can stay braver because the goalkeeper is connected.",
         do: "Read the pass early, step out under control, and communicate the recovery run.",
         dont: "Do not stay glued to the goal line when the line has pushed up.",
-        ball: { x: 515, y: 378 },
-        ballAt: { x: 542, y: 402 },
-        carrier: "7",
+        ball: { x: 515, y: 500 },
         blues: {
           "1": { x: 515, y: 548 },
           "3": { x: 385, y: 448 },
@@ -979,16 +977,16 @@
           "8": { x: 555, y: 332 }
         },
         reds: {
-          "7": { x: 515, y: 378 },
+          "7": { x: 548, y: 462 },
           "9": { x: 500, y: 276 },
           "10": { x: 714, y: 236 },
           "11": { x: 292, y: 236 }
         },
         roles: [
+          "#7 is the runner attacking the space behind the line.",
           "#1 leaves the line early enough to collect or clear the pass.",
           "#3 and #5 turn and recover inside the posts, not toward the wings.",
-          "#6 and #8 delay the next central option if the first ball is not won.",
-          "The recovery shape protects the goal before chasing wide runners."
+          "#6 and #8 delay the next central option if the first ball is not won."
         ],
         zones: [
           { type: "danger", points: "500,276 565,604 435,604" },
@@ -996,13 +994,13 @@
           { type: "trap", points: "448,448 552,448 552,578 448,578" }
         ],
         arrows: [
-          { type: "switch", d: "M500 276 C505 320 510 350 515 378" },
+          { type: "switch", d: "M500 276 C510 350 515 425 515 500" },
           { type: "arrow", d: "M515 610 L515 548" },
           { type: "arrow", d: "M385 448 C420 486 450 515 478 548" },
           { type: "arrow", d: "M615 448 C580 486 550 515 522 548" }
         ],
         notes: [
-          { x: 530, y: 410, text: "ball behind line" },
+          { x: 530, y: 492, text: "ball behind line" },
           { x: 548, y: 558, text: "#1 sweeps" }
         ]
       },
